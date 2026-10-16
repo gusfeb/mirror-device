@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>DeskFlow - iPhone Remote</title>
+  
+  <!-- Apple Web App & PWA Settings -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="DeskFlow">
+  <meta name="theme-color" content="#07090e">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="ambient-glow"></div>
+  <div class="ambient-glow-2"></div>
+
+  <div class="app-container">
+    <!-- Top Header (Portrait Only) -->
+    <header class="top-header">
+      <div class="brand-wrapper">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text-group">
+          <div class="brand-title">DeskFlow</div>
+          <div class="brand-subtitle" id="device-info">Menghubungkan...</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn-header-action" id="btn-fullscreen-toggle" title="Layar Penuh">⛶</button>
+        <div class="status-pill disconnected" id="connection-pill">
+          <div class="status-dot"></div>
+          <span id="connection-text">Offline</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main View Panels -->
+    <main class="main-content">
+      <!-- 1. TRACKPAD PANEL -->
+      <section class="view-panel active" id="panel-trackpad">
+        <div class="trackpad-container">
+          <!-- Top Settings Bar -->
+          <div class="trackpad-top-bar">
+            <div class="slider-group">
+              <span class="icon-label">⚡ Kecepatan:</span>
+              <input type="range" id="slider-sensitivity" min="1" max="3.5" step="0.1" value="1.8">
+              <span class="slider-value" id="val-sensitivity">1.8x</span>
+            </div>
+            <div class="trackpad-top-actions">
+              <button class="btn-pill" id="btn-middle-click">Klik Tengah</button>
+              <button class="btn-pill" id="btn-double-click">2x Klik</button>
+            </div>
+          </div>
+
+          <!-- Main Touch Surface -->
+          <div class="trackpad-surface" id="trackpad-area">
+            <div class="trackpad-pattern"></div>
+            <div class="touch-ripple" id="trackpad-ripple"></div>
+            
+            <!-- Dedicated Scroll Strip on Right Edge -->
+            <div class="scroll-strip" id="scroll-strip" title="Geser di sini untuk scroll">
+              <span class="scroll-arrow">▲</span>
+              <span class="scroll-label">SCROLL</span>
+              <span class="scroll-arrow">▼</span>
+            </div>
+
+            <div class="trackpad-hint" id="trackpad-hint">
+              <span class="hint-icon">👆</span>
+              <span class="hint-title">Area Trackpad</span>
+              <span class="hint-desc">1 Jari: Kursor & Klik • 2 Jari: Klik Kanan<br>Strip Kanan / 2 Jari: Scroll Cepat</span>
+            </div>
+          </div>
+
+          <!-- Large Mouse Click Buttons -->
+          <div class="mouse-button-row">
+            <button class="btn-mouse btn-left" id="btn-left-click">
+              <span class="btn-label">KLIK KIRI</span>
+              <span class="btn-sub">Tap Utama</span>
+            </button>
+            <button class="btn-mouse btn-drag" id="btn-drag-lock">
+              <span class="btn-label" id="drag-status-label">🔒 Drag</span>
+              <span class="btn-sub" id="drag-status-text">Lepas</span>
+            </button>
+            <button class="btn-mouse btn-right" id="btn-right-click">
+              <span class="btn-label">KLIK KANAN</span>
+              <span class="btn-sub">Menu Konteks</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. SCREEN VIEW PANEL -->
+      <section class="view-panel" id="panel-screen">
+        <div class="screen-container">
+          <!-- Portrait Zoom Bar -->
+          <div class="screen-zoom-bar portrait-only">
+            <span class="zoom-bar-label">🔍 Zoom:</span>
+            <div class="zoom-buttons">
+              <button class="btn-zoom active" data-zoom="1">1x (Pas)</button>
+              <button class="btn-zoom" data-zoom="1.5">1.5x</button>
+              <button class="btn-zoom" data-zoom="2">2x (Jelas)</button>
+              <button class="btn-zoom" data-zoom="3">3x (Teks)</button>
+            </div>
+          </div>
+
+          <!-- Main Screen Viewport -->
+          <div class="screen-viewport-card" id="screen-viewport">
+            <div class="screen-zoom-wrapper" id="screen-zoom-wrapper">
+              <img class="screen-view-img" id="screen-img" alt="Desktop Screen Mirror" style="display:none;">
+              <div class="screen-touch-pointer" id="screen-pointer"></div>
+            </div>
+            <div class="screen-placeholder" id="screen-loading">
+              <div class="screen-icon">🖥️</div>
+              <div class="placeholder-text">
+                <strong>Layar PC Windows</strong><br>
+                Aktifkan tombol Mulai Layar untuk melihat layar live & mengklik dengan sentuhan.
+              </div>
+            </div>
+            <div class="screen-landscape-hint portrait-only">💡 Putar HP ke samping (Landscape) untuk layar penuh</div>
+          </div>
+
+          <!-- Portrait Screen Action Bar -->
+          <div class="screen-toolbar portrait-only">
+            <button class="btn-stream-toggle" id="btn-toggle-stream">
+              <span id="stream-icon">▶</span>
+              <span id="stream-label">Mulai Layar Live</span>
+            </button>
+            <button class="btn-frameless-launch" id="btn-launch-frameless">
+              📺 Mode Frameless
+            </button>
+            <div class="screen-mode-pills">
+              <button class="screen-pill active" id="btn-direct-touch">👆 Klik Sentuh</button>
+              <button class="screen-pill" id="btn-refresh-screen">🔄 Foto</button>
+            </div>
+          </div>
+
+          <!-- Portrait Bottom Click Helpers -->
+          <div class="screen-action-row portrait-only">
+            <button class="btn-screen-click" id="btn-screen-left">KLIK KIRI</button>
+            <button class="btn-screen-click" id="btn-screen-double">2x KLIK</button>
+            <button class="btn-screen-click" id="btn-screen-right">KLIK KANAN</button>
+          </div>
+
+          <!-- LANDSCAPE FLOATING HUD (In standard landscape view) -->
+          <div class="landscape-hud" id="landscape-hud">
+            <button class="btn-hud" id="hud-toggle-stream">▶ Mulai</button>
+            <button class="btn-hud highlight" id="hud-launch-frameless">📺 Frameless</button>
+            <button class="btn-hud" id="hud-zoom">🔍 1x</button>
+            <button class="btn-hud" id="hud-keyboard">⌨️ Keyboard</button>
+            <button class="btn-hud" id="hud-trackpad">🖱️ Trackpad</button>
+            <button class="btn-hud" id="hud-fullscreen">⛶ Full</button>
+            <button class="btn-hud close-hud" id="hud-toggle-visibility" title="Sembunyikan HUD">✕</button>
+          </div>
+
+          <button class="btn-reopen-hud" id="btn-reopen-hud" title="Tampilkan Menu HUD">⚡ Menu</button>
+
+          <!-- Floating Thumb Click Buttons in Landscape -->
+          <div class="landscape-thumb-triggers">
+            <button class="btn-thumb-trigger thumb-left" id="btn-thumb-left">KLIK KIRI</button>
+            <button class="btn-thumb-trigger thumb-right" id="btn-thumb-right">KLIK KANAN</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. KEYBOARD & SHORTCUTS PANEL -->
+      <section class="view-panel scrollable" id="panel-keyboard">
+        <div class="keyboard-container">
+          <!-- Text Typing Bar -->
+          <div class="text-input-box">
+            <input type="text" id="keyboard-input" placeholder="Ketik teks di sini lalu kirim..." autocomplete="off" autocorrect="off">
+            <button class="btn-send-text" id="btn-send-text">KIRIM</button>
+          </div>
+
+          <!-- Keyboard Content Grid -->
+          <div class="keyboard-content-wrapper">
+            <div class="keyboard-col">
+              <div class="keyboard-section-title">Navigasi Utama</div>
+              <div class="key-grid grid-cols-4">
+                <button class="btn-key" data-key="esc">Esc</button>
+                <button class="btn-key" data-key="tab">Tab</button>
+                <button class="btn-key accent" data-key="win">⊞ Win</button>
+                <button class="btn-key danger" data-key="backspace">⌫ Del</button>
+              </div>
+
+              <div class="keyboard-section-title">Shortcut Windows & Clipboard</div>
+              <div class="key-grid grid-cols-4">
+                <button class="btn-key" data-key="copy">Ctrl+C</button>
+                <button class="btn-key" data-key="paste">Ctrl+V</button>
+                <button class="btn-key" data-key="undo">Ctrl+Z</button>
+                <button class="btn-key" data-key="selectall">Ctrl+A</button>
+              </div>
+              <div class="key-grid grid-cols-3">
+                <button class="btn-key purple" data-key="winv">📋 Win+V (Clip)</button>
+                <button class="btn-key accent" data-key="alttab">📑 Alt+Tab</button>
+                <button class="btn-key" data-key="desktop">🖥️ Win+D</button>
+              </div>
+              <div class="key-grid grid-cols-3">
+                <button class="btn-key cyan" data-key="snipping">📸 Screenshot</button>
+                <button class="btn-key" data-key="taskmgr">⚡ Task Mgr</button>
+                <button class="btn-key danger" data-key="altf4">❌ Alt+F4</button>
+              </div>
+            </div>
+
+            <div class="keyboard-col">
+              <div class="keyboard-section-title">Tombol Panah Navigasi</div>
+              <div class="dpad-container">
+                <button class="btn-key dpad-up" data-key="up">▲</button>
+                <button class="btn-key dpad-left" data-key="left">◄</button>
+                <button class="btn-key dpad-down" data-key="down">▼</button>
+                <button class="btn-key dpad-right" data-key="right">►</button>
+              </div>
+
+              <div class="key-grid grid-cols-2" style="margin-top:10px;">
+                <button class="btn-key primary-action" data-key="enter">⏎ ENTER</button>
+                <button class="btn-key" data-key="space">SPASI</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. MEDIA & SYSTEM PANEL -->
+      <section class="view-panel scrollable" id="panel-system">
+        <div class="system-container">
+          <div class="system-content-wrapper">
+            <div class="system-col">
+              <div class="control-card">
+                <div class="card-title">🎵 Pemutar Musik & Video</div>
+                <div class="media-btn-row">
+                  <button class="btn-media" data-key="prevtrack">⏮</button>
+                  <button class="btn-media play-pause" data-key="playpause">⏯</button>
+                  <button class="btn-media" data-key="nexttrack">⏭</button>
+                </div>
+                <div class="volume-control-row">
+                  <button class="btn-key vol-btn" data-key="voldown">🔉 Vol -</button>
+                  <button class="btn-key vol-btn" data-key="volmute">🔇 Mute</button>
+                  <button class="btn-key vol-btn" data-key="volup">🔊 Vol +</button>
+                </div>
+              </div>
+
+              <div class="control-card">
+                <div class="card-title">🚀 Buka Aplikasi Windows</div>
+                <div class="app-launcher-grid">
+                  <button class="btn-app" data-key="explorer">
+                    <span class="app-icon">📁</span>
+                    <span>File Explorer</span>
+                  </button>
+                  <button class="btn-app" data-key="run">
+                    <span class="app-icon">⚡</span>
+                    <span>Run Dialog</span>
+                  </button>
+                  <button class="btn-app" data-key="desktop">
+                    <span class="app-icon">🖥️</span>
+                    <span>Minimize Semua</span>
+                  </button>
+                  <button class="btn-app" data-key="alttab">
+                    <span class="app-icon">📑</span>
+                    <span>Ganti Jendela</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="system-col">
+              <div class="control-card">
+                <div class="card-title">🔌 Daya & Keamanan PC</div>
+                <div class="power-grid">
+                  <button class="btn-key power-btn" data-system="lock">
+                    <span>🔒</span> Kunci PC
+                  </button>
+                  <button class="btn-key power-btn" data-system="sleep">
+                    <span>🌙</span> Sleep
+                  </button>
+                  <button class="btn-power" data-system-confirm="restart">
+                    <span>🔄</span> Restart
+                  </button>
+                  <button class="btn-power" data-system-confirm="shutdown">
+                    <span>⏻</span> Matikan PC
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. WINDOWS SELECTOR / JENDELA PANEL -->
+      <section class="view-panel scrollable" id="panel-windows">
+        <div class="windows-container">
+          <!-- Top Windows Bar with Search & Refresh -->
+          <div class="windows-header-bar">
+            <div class="windows-search-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="windows-search-input" placeholder="Cari nama jendela / aplikasi...">
+            </div>
+            <button class="btn-refresh-windows" id="btn-refresh-windows" title="Segarkan Daftar Jendela">
+              <span>🔄</span> Segarkan
+            </button>
+          </div>
+
+          <div class="windows-status-row">
+            <span class="windows-count" id="windows-count">Memuat jendela aktif...</span>
+            <span class="windows-tip">Ketuk untuk langsung beralih ke jendela tersebut</span>
+          </div>
+
+          <!-- Windows List Cards Container -->
+          <div class="windows-cards-grid" id="windows-cards-grid">
+            <!-- Rendered dynamically by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. PHONE TO PC SCREEN MIRROR PANEL -->
+      <section class="view-panel scrollable" id="panel-phonescreen">
+        <div class="phonescreen-container">
+          <!-- Top Hero Card -->
+          <div class="phone-hero-card">
+            <div class="hero-header-row">
+              <div class="hero-icon-box">📱</div>
+              <div class="hero-text-col">
+                <div class="hero-title">Layar HP ke Desktop</div>
+                <div class="hero-sub" id="phone-stream-status-sub">Siap menampilkan ke monitor PC</div>
+              </div>
+              <div class="stream-live-pill" id="phone-stream-pill">
+                <span class="pill-dot"></span>
+                <span class="pill-text" id="phone-pill-text">Standby</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Streaming Control Card (Visible when streaming) -->
+          <div class="stream-active-card hidden" id="phone-stream-active-card">
+            <div class="stream-preview-wrapper">
+              <video id="phone-preview-video" autoplay playsinline muted></video>
+              <div class="stream-preview-badge">🔴 LIVE DI MONITOR PC</div>
+              <div class="stream-metrics-tag" id="phone-stream-metrics-tag">1080p • 60 FPS</div>
+            </div>
+            <div class="stream-active-actions">
+              <button class="btn-stream-danger" id="btn-stop-phone-stream">
+                <span>⏹️</span>
+                <span>Hentikan Berbagi</span>
+              </button>
+              <button class="btn-stream-action" id="btn-flip-camera" style="display:none;">
+                <span>🔄</span>
+                <span>Putar Kamera</span>
+              </button>
+              <button class="btn-stream-action highlight" id="btn-reopen-desktop-viewer">
+                <span>🖥️</span>
+                <span>Buka di PC</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Setup Controls (Visible when not streaming) -->
+          <div class="stream-setup-wrapper" id="phone-stream-setup-wrapper">
+            <!-- Big Primary Action Button -->
+            <button class="btn-launch-stream" id="btn-start-phone-stream">
+              <div class="launch-icon">🚀</div>
+              <div class="launch-text-group">
+                <span class="launch-main-text">Mulai Bagikan Layar HP</span>
+                <span class="launch-sub-text">Tampilkan langsung ke monitor PC Anda</span>
+              </div>
+              <div class="launch-arrow">➔</div>
+            </button>
+
+            <!-- Open Desktop Monitor Viewer Button -->
+            <button class="btn-open-pc-window" id="btn-open-pc-viewer">
+              <span class="btn-pc-icon">🖥️</span>
+              <div class="btn-pc-text">
+                <strong>Buka Jendela Monitor di PC</strong>
+                <span>Membuka penampil melayang di desktop Windows</span>
+              </div>
+              <span class="btn-pc-arrow">↗</span>
+            </button>
+
+            <!-- Mode Selector Card -->
+            <div class="control-card">
+              <div class="card-title">🎯 Pilih Sumber Tampilan</div>
+              <div class="source-options-grid">
+                <label class="source-card active" data-source="screen">
+                  <input type="radio" name="stream_source" value="screen" checked>
+                  <div class="source-icon">📱</div>
+                  <div class="source-info">
+                    <span class="source-name">Seluruh Layar HP</span>
+                    <span class="source-desc">Aplikasi, game, foto, browser (Android)</span>
+                  </div>
+                </label>
+
+                <label class="source-card" data-source="camera_back">
+                  <input type="radio" name="stream_source" value="camera_back">
+                  <div class="source-icon">📷</div>
+                  <div class="source-info">
+                    <span class="source-name">Kamera Belakang</span>
+                    <span class="source-desc">Visualizer dokumen, meja, atau objek</span>
+                  </div>
+                </label>
+
+                <label class="source-card" data-source="camera_front">
+                  <input type="radio" name="stream_source" value="camera_front">
+                  <div class="source-icon">🤳</div>
+                  <div class="source-info">
+                    <span class="source-name">Kamera Depan</span>
+                    <span class="source-desc">Gunakan HP sebagai webcam / facecam</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Quality & Audio Settings -->
+            <div class="control-card">
+              <div class="card-title">⚙️ Kualitas & Opsi Suara</div>
+              <div class="quality-row">
+                <div class="quality-label">Resolusi:</div>
+                <div class="quality-pills">
+                  <button class="btn-quality-pill" data-quality="1080">1080p FHD</button>
+                  <button class="btn-quality-pill active" data-quality="720">720p HD</button>
+                  <button class="btn-quality-pill" data-quality="480">480p SD</button>
+                </div>
+              </div>
+              <div class="quality-row" style="margin-top: 10px;">
+                <div class="quality-label">Sertakan Audio HP:</div>
+                <label class="switch-toggle">
+                  <input type="checkbox" id="chk-stream-audio" checked>
+                  <span class="slider-round"></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- iOS & AirPlay Info Card -->
+            <div class="control-card ios-info-card">
+              <div class="card-title">🍎 Panduan Khusus Pengguna iPhone</div>
+              <div class="ios-tips-body">
+                <div class="ios-tip-item">
+                  <span class="tip-badge">Kamera HD</span>
+                  <span>Bisa streaming langsung via Safari tanpa aplikasi tambahan!</span>
+                </div>
+                <div class="ios-tip-item">
+                  <span class="tip-badge">Layar Penuh</span>
+                  <span>Untuk membagikan seluruh sistem iOS (Home screen/Apps), gunakan <strong>Pusat Kontrol ➔ Pencerminan Layar (AirPlay)</strong> ke PC.</span>
+                </div>
+              </div>
+              <button class="btn-ios-guide" id="btn-show-ios-guide" style="width: 100%; margin-top: 10px; padding: 10px; border-radius: var(--radius-sm); background: rgba(59, 130, 246, 0.2); border: 1px solid var(--border-focus); color: #93c5fd; font-size: 12px; font-weight: 700; cursor: pointer;">
+                📖 Ketuk di Sini untuk Cara Lengkap iPhone
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Navigation Bar (6 Tabs) -->
+    <nav class="bottom-nav" id="bottom-nav">
+      <button class="nav-tab active" data-tab="trackpad">
+        <span class="tab-icon">🖱️</span>
+        <span class="tab-text">Trackpad</span>
+      </button>
+      <button class="nav-tab" data-tab="screen">
+        <span class="tab-icon">🖥️</span>
+        <span class="tab-text">Layar PC</span>
+      </button>
+      <button class="nav-tab" data-tab="phonescreen">
+        <span class="tab-icon">📱</span>
+        <span class="tab-text">Layar HP</span>
+      </button>
+      <button class="nav-tab" data-tab="windows">
+        <span class="tab-icon">📑</span>
+        <span class="tab-text">Jendela</span>
+      </button>
+      <button class="nav-tab" data-tab="keyboard">
+        <span class="tab-icon">⌨️</span>
+        <span class="tab-text">Keyboard</span>
+      </button>
+      <button class="nav-tab" data-tab="system">
+        <span class="tab-icon">🎛️</span>
+        <span class="tab-text">Media</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- 🌟 FRAMELESS FULLSCREEN MODE WITH COMPLETE CONTROLS 🌟 -->
+  <!-- ================================================= -->
+  <div class="frameless-overlay" id="frameless-overlay">
+    <!-- Edge-to-Edge Monitor Viewport -->
+    <div class="frameless-screen-viewport" id="frameless-viewport">
+      <div class="frameless-zoom-wrapper" id="frameless-zoom-wrapper">
+        <img class="frameless-screen-img" id="frameless-img" alt="Desktop Frameless">
+        <div class="screen-touch-pointer" id="frameless-pointer"></div>
+      </div>
+    </div>
+
+    <!-- Floating Top Dynamic Island (Controls & Shortcuts) -->
+    <div class="frameless-top-hud" id="frameless-top-hud">
+      <div class="frameless-hud-main-bar">
+        <button class="fl-btn exit" id="fl-btn-exit" title="Keluar Mode Frameless">✕ Keluar</button>
+        <button class="fl-btn highlight" id="fl-btn-windows" title="Pilih Jendela Windows">📑 Jendela</button>
+        <button class="fl-btn" id="fl-btn-fit" title="Ganti Mode Pas / Isi Layar">⛶ Fit/Fill</button>
+        <button class="fl-btn" id="fl-btn-zoom" title="Zoom">🔍 1x</button>
+        <button class="fl-btn" id="fl-btn-keyboard" title="Buka Keyboard">⌨️ Ketik</button>
+        <button class="fl-btn" id="fl-btn-ghost" title="Mode Transparan Kontrol">👻 Ghost</button>
+        <button class="fl-btn hide-all" id="fl-btn-hide-hud" title="Sembunyikan Semua Tombol">👁️ Bersih</button>
+      </div>
+
+      <!-- Quick Windows Shortcuts Island -->
+      <div class="frameless-hud-shortcuts">
+        <button class="hud-key" data-key="esc">Esc</button>
+        <button class="hud-key accent" data-key="win">⊞ Win</button>
+        <button class="hud-key" data-key="alttab">Alt+Tab</button>
+        <button class="hud-key" data-key="desktop">Win+D</button>
+        <button class="hud-key purple" data-key="winv">📋 Win+V</button>
+        <button class="hud-key" data-key="copy">Ctrl+C</button>
+        <button class="hud-key" data-key="paste">Ctrl+V</button>
+        <button class="hud-key cyan" data-key="snipping">📸</button>
+        <button class="hud-key danger" data-key="altf4">Alt+F4</button>
+      </div>
+    </div>
+
+    <!-- Reopen Floating Trigger Pill when HUD is hidden -->
+    <button class="frameless-reopen-pill" id="fl-btn-reopen">⚡ Menu Kontrol</button>
+
+    <!-- Floating Thumb Controls (Left) -->
+    <div class="frameless-thumb-group left" id="fl-thumb-left">
+      <button class="fl-main-click left-click" id="fl-click-left">
+        <span>KLIK</span>
+        <span class="sub">KIRI</span>
+      </button>
+      <div class="fl-sub-clicks">
+        <button class="fl-sub-btn" id="fl-click-double">2x Klik</button>
+        <button class="fl-sub-btn" id="fl-drag-lock">🔒 Drag</button>
+      </div>
+    </div>
+
+    <!-- Floating Thumb Controls (Right) -->
+    <div class="frameless-thumb-group right" id="fl-thumb-right">
+      <button class="fl-main-click right-click" id="fl-click-right">
+        <span>KLIK</span>
+        <span class="sub">KANAN</span>
+      </button>
+      <div class="fl-sub-clicks">
+        <button class="fl-sub-btn" id="fl-click-middle">Tengah</button>
+        <button class="fl-sub-btn active" id="fl-touch-toggle">👆 Touch</button>
+      </div>
+      <!-- Quick Edge Scroll on Right Side -->
+      <div class="fl-scroll-strip" id="fl-scroll-strip">
+        <span>▲</span>
+        <span class="text">SCROLL</span>
+        <span>▼</span>
+      </div>
+    </div>
+
+    <!-- Bottom Quick Typing Drawer in Frameless Mode -->
+    <div class="frameless-typing-drawer" id="frameless-drawer">
+      <div class="drawer-header">
+        <span>⌨️ Ketik Langsung ke Windows PC</span>
+        <button class="drawer-close" id="fl-btn-close-drawer">✕</button>
+      </div>
+      <div class="drawer-input-row">
+        <input type="text" id="fl-typing-input" placeholder="Ketik teks & tekan Kirim..." autocomplete="off">
+        <button class="btn-send-drawer" id="fl-btn-send-text">KIRIM</button>
+      </div>
+      <div class="drawer-quick-keys">
+        <button class="drawer-key" data-key="enter">⏎ Enter</button>
+        <button class="drawer-key" data-key="backspace">⌫ Del</button>
+        <button class="drawer-key" data-key="tab">Tab</button>
+        <button class="drawer-key" data-key="space">Spasi</button>
+      </div>
+    </div>
+
+    <!-- Quick Windows Switcher Modal in Frameless Mode -->
+    <div class="frameless-windows-modal" id="fl-windows-modal">
+      <div class="fl-win-header">
+        <div class="fl-win-title">
+          <span>📑</span>
+          <span>Pilih Jendela Desktop</span>
+        </div>
+        <div class="fl-win-actions">
+          <button class="fl-win-btn-action refresh" id="fl-win-btn-refresh">🔄 Segarkan</button>
+          <button class="fl-win-btn-action close" id="fl-win-btn-close">✕ Tutup</button>
+        </div>
+      </div>
+      <div class="fl-win-search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="fl-win-search-input" placeholder="Cari nama aplikasi / dokumen...">
+      </div>
+      <div class="fl-win-list" id="fl-win-cards-grid">
+        <!-- Rendered dynamically by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal for Power Actions -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal-box">
+      <div class="modal-icon">⚠️</div>
+      <div class="modal-title" id="modal-title">Konfirmasi Tindakan</div>
+      <div class="modal-desc" id="modal-desc">Apakah Anda yakin ingin mematikan PC ini?</div>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" id="btn-modal-cancel">Batal</button>
+        <button class="btn-modal-confirm" id="btn-modal-confirm">Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Panduan Khusus iPhone (AirPlay) -->
+  <div class="modal-overlay" id="ios-guide-modal">
+    <div class="modal-box ios-guide-box" style="max-height: 85vh; overflow-y: auto;">
+      <div class="modal-icon">🍎</div>
+      <div class="modal-title">Panduan Layar iPhone ke PC</div>
+      <div class="modal-desc" style="text-align: left; font-size: 13px; line-height: 1.5; color: #cbd5e1;">
+        <p style="margin-bottom: 10px;">
+          <strong>Kenapa di Safari ada batasan?</strong><br>
+          Apple membatasi tangkapan layar browser (WebKit) di iOS demi keamanan privasi pengguna (agar web tidak bisa merekam PIN/m-Banking).
+        </p>
+        <div style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 10px; padding: 10px; margin-bottom: 12px;">
+          <strong style="color: #93c5fd;">✅ CARA 1: Tampilkan Seluruh Layar (AirPlay Bawaan Apple)</strong>
+          <ol style="margin-left: 18px; margin-top: 6px; display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+            <li>Pastikan iPhone & PC di <strong>Wi-Fi yang sama</strong>.</li>
+            <li>Di PC Windows, jalankan file <code>install_airplay_iphone.bat</code> atau pasang aplikasi <em>AirPlay Receiver</em> dari Microsoft Store.</li>
+            <li>Buka <strong>Pusat Kontrol (Control Center)</strong> di iPhone (geser dari pojok kanan atas ke bawah).</li>
+            <li>Ketuk tombol <strong>Pencerminan Layar</strong> (ikon 2 kotak bertumpuk).</li>
+            <li>Pilih nama PC / <em>UxPlay</em>. Selesai! Layar iPhone langsung tampil di PC 60 FPS.</li>
+          </ol>
+        </div>
+        <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 10px; padding: 10px;">
+          <strong style="color: #a7f3d0;">✅ CARA 2: Gunakan Kamera HP HD (Langsung di Browser)</strong>
+          <p style="font-size: 12px; margin-top: 4px;">
+            Tanpa perlu instal aplikasi apapun di PC! Cukup pilih opsi <strong>Kamera Belakang</strong> atau <strong>Kamera Depan</strong> di DeskFlow lalu tekan <em>Mulai Bagikan Layar</em>.
+          </p>
+        </div>
+      </div>
+      <div class="modal-actions" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+        <button class="btn-modal-confirm" id="btn-launch-airplay-pc" style="background: linear-gradient(135deg, #2563eb, #8b5cf6); width: 100%;">
+          ⚡ Jalankan AirPlay di PC Sekarang
+        </button>
+        <div style="display: flex; gap: 8px; width: 100%;">
+          <button class="btn-modal-cancel" id="btn-close-ios-guide" style="flex: 1;">Tutup</button>
+          <button class="btn-modal-confirm" id="btn-switch-to-camera" style="flex: 1;">Pakai Kamera HP</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Client -->
+  <script src="/app.js"></script>
+</body>
+</html>
